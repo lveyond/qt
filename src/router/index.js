@@ -11,7 +11,8 @@ import Game from '../views/Game.vue'
 const routes = [{
         path: '/',
         name: 'Dashboard',
-        component: Dashboard
+        component: Dashboard,
+        alias: '/dashboard' // 添加别名，/dashboard 也会指向 Dashboard
     },
     {
         path: '/trading',

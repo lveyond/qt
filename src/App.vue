@@ -21,7 +21,7 @@
           :key="item.path"
           :to="item.path"
           class="nav-link"
-          :class="{ active: $route.path === item.path }"
+          :class="{ active: isActiveRoute(item.path) }"
         >
           <span class="nav-icon" v-html="item.icon"></span>
           <span class="nav-text">{{ item.name }}</span>
@@ -71,8 +71,11 @@
 
 <script setup>
 import { ref, computed, provide } from 'vue'
+import { useRoute } from 'vue-router'
 import { getCurrentLanguage, setCurrentLanguage, t as translate } from './i18n'
 import Resume from './views/Resume.vue'
+
+const route = useRoute()
 
 const currentLanguage = ref(getCurrentLanguage())
 const showResume = ref(false)
@@ -126,6 +129,16 @@ const navItems = computed(() => [
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
   }
 ])
+
+// 判断路由是否激活（支持根路径和别名）
+const isActiveRoute = (path) => {
+  const currentPath = route.path
+  // 如果是根路径，同时匹配 / 和 /dashboard
+  if (path === '/') {
+    return currentPath === '/' || currentPath === '/dashboard'
+  }
+  return currentPath === path
+}
 
 // 监听语言变化，更新导航项
 window.addEventListener('language-changed', () => {
