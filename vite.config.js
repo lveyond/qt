@@ -9,9 +9,8 @@ export default defineConfig({
         open: true
     },
     // GitHub Pages 部署配置
-    // 如果你的仓库名是 quant-trading-dapp，则 base 应该是 '/quant-trading-dapp/'
-    // 如果部署到根域名，则 base 应该是 '/'
-    base: process.env.NODE_ENV === 'production' ? '/' : '/',
+    // 仓库名是 qt，所以 base 应该是 '/qt/'
+    base: process.env.NODE_ENV === 'production' ? '/qt/' : '/',
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
