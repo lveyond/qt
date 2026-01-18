@@ -130,7 +130,7 @@
     </div>
 
     <!-- 交易模拟器游戏 -->
-    <div v-if="currentGame === 'trading'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'trading'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -209,7 +209,7 @@
     </div>
 
     <!-- 策略拼图游戏 -->
-    <div v-if="currentGame === 'puzzle'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'puzzle'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -270,7 +270,7 @@
     </div>
 
     <!-- 价格预测游戏 -->
-    <div v-if="currentGame === 'predict'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'predict'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -373,7 +373,7 @@
     </div>
 
     <!-- 挖矿小游戏 -->
-    <div v-if="currentGame === 'mining'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'mining'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -471,7 +471,7 @@
     </div>
 
     <!-- 交易对匹配游戏 -->
-    <div v-if="currentGame === 'match'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'match'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -533,7 +533,7 @@
     </div>
 
     <!-- 收益计算挑战 -->
-    <div v-if="currentGame === 'calculator'" class="game-modal pixel-border" @click.self="closeGame">
+    <div v-if="currentGame === 'calculator'" class="game-modal pixel-border" @click="handleGameBackdropClick">
       <div class="game-content-with-sidebar">
         <div class="game-main-content">
           <div class="game-header">
@@ -780,6 +780,16 @@ const openGame = (game) => {
     restartMatch()
   } else if (game === 'calculator') {
     restartCalculator()
+  }
+}
+
+// 阻止点击遮罩层关闭游戏弹窗
+const handleGameBackdropClick = (e) => {
+  // 如果点击的是遮罩层本身（不是游戏内容），阻止关闭
+  if (e.target === e.currentTarget) {
+    e.preventDefault()
+    e.stopPropagation()
+    // 不执行任何操作，强制用户使用关闭按钮
   }
 }
 

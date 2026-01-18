@@ -338,8 +338,8 @@
     <!-- 策略详情弹窗 -->
     <div 
       class="strategy-modal" 
-      v-if="showStrategyModal" 
-      @click.self="closeStrategyModal"
+      v-if="showStrategyModal"
+      @click="handleStrategyModalBackdropClick"
     >
       <div class="modal-content strategy-modal-content">
         <div class="modal-header">
@@ -636,6 +636,16 @@ const filterStrategies = (filter) => {
 const viewStrategy = (strategy) => {
   currentStrategy.value = strategy
   showStrategyModal.value = true
+}
+
+// 阻止点击遮罩层关闭策略弹窗
+const handleStrategyModalBackdropClick = (e) => {
+  // 如果点击的是遮罩层本身（不是弹窗内容），阻止关闭
+  if (e.target === e.currentTarget) {
+    e.preventDefault()
+    e.stopPropagation()
+    // 不执行任何操作，强制用户使用关闭按钮
+  }
 }
 
 const closeStrategyModal = () => {

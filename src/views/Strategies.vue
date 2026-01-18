@@ -96,7 +96,7 @@
     <div 
       class="code-view-modal" 
       v-if="showCodeModal" 
-      @click.self="closeCodeModal"
+      @click="handleModalBackdropClick"
       @wheel.prevent="handleModalWheel"
     >
       <div class="modal-content code-modal-content">
@@ -122,7 +122,7 @@
     <div 
       class="create-strategy-modal" 
       v-if="showCreateModal"
-      @click.self="closeCreateModal"
+      @click="handleModalBackdropClick"
       @wheel.prevent="handleModalWheel"
     >
       <div class="modal-content create-modal-content">
@@ -407,7 +407,7 @@
     <div 
       class="backtest-modal" 
       v-if="showBacktestModal"
-      @click.self="closeBacktestModal"
+      @click="handleModalBackdropClick"
       @wheel.prevent="handleModalWheel"
     >
       <div class="modal-content backtest-modal-content">
@@ -1518,6 +1518,16 @@ const closeCodeModal = () => {
 const handleModalWheel = (e) => {
   // 阻止弹窗背景的滚动事件冒泡
   e.stopPropagation()
+}
+
+// 阻止点击遮罩层关闭弹窗
+const handleModalBackdropClick = (e) => {
+  // 如果点击的是遮罩层本身（不是弹窗内容），阻止关闭
+  if (e.target === e.currentTarget) {
+    e.preventDefault()
+    e.stopPropagation()
+    // 不执行任何操作，强制用户使用关闭按钮
+  }
 }
 
 const copyCode = async () => {
