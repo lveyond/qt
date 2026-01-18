@@ -46,6 +46,39 @@ npm run build
 npm run preview
 ```
 
+## 🌐 部署到 GitHub Pages
+
+### 快速部署（推荐）
+
+1. **创建 GitHub 仓库并推送代码**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/你的用户名/仓库名.git
+   git push -u origin main
+   ```
+
+2. **启用 GitHub Pages**
+   - 进入仓库 Settings > Pages
+   - Source 选择 "GitHub Actions"
+   - 保存设置
+
+3. **自动部署**
+   - 每次推送到 `main` 分支会自动触发部署
+   - 部署完成后访问：`https://你的用户名.github.io/仓库名/`
+
+### 手动部署
+
+如果需要手动部署，可以使用：
+```bash
+npm install -g gh-pages
+npm run deploy
+```
+
+详细部署说明请查看 [DEPLOY.md](./DEPLOY.md)
+
 ## 📁 项目结构
 
 ```

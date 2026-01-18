@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>QuantDApp</title>
+    <script>
+      // 单页应用 404 处理
+      // 将所有路径重定向到 index.html，让 Vue Router 处理路由
+      var path = window.location.pathname;
+      var hash = window.location.hash;
+      var search = window.location.search;
+      
+      // 如果路径不是根路径，重定向到根路径并保留 hash 和 search
+      if (path !== '/') {
+        window.location.replace('/' + hash + search);
+      }
+    </script>
+  </head>
+  <body>
+    <p>正在跳转...</p>
+  </body>
+</html>
