@@ -1,0 +1,449 @@
+/* Git风格暗色主题 - 量化交易DApp */
+
+:root {
+    /* Git风格配色 */
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --bg-hover: #1c2128;
+    --border-color: #30363d;
+    --border-hover: #484f58;
+    /* 文本颜色 */
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --text-link: #58a6ff;
+    /* 状态颜色 */
+    --success: #3fb950;
+    --success-bg: #033a16;
+    --danger: #ff6b4a;
+    --danger-bg: #3d1f1e;
+    --warning: #d29922;
+    --warning-bg: #341a00;
+    --info: #58a6ff;
+    --info-bg: #0c2d1b;
+    /* 交易相关 */
+    --buy: #3fb950;
+    --sell: #ff6b4a;
+    --profit: #3fb950;
+    --loss: #ff6b4a;
+    /* 科技感按钮颜色 */
+    --tech-primary: #6366f1;
+    --tech-primary-hover: #818cf8;
+    --tech-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    /* 字体 */
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --font-sans: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    /* 间距 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* 强制所有中文文本使用指定字体 */
+
+body,
+div:not(.mono):not([class*="mono"]):not([class*="code"]):not([class*="terminal"]),
+span:not(.mono):not([class*="mono"]):not([class*="code"]):not([class*="terminal"]),
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+button:not(.mono):not([class*="mono"]),
+label,
+input:not(.mono):not([class*="mono"]),
+textarea:not(.mono):not([class*="mono"]),
+select,
+table,
+td:not(.mono):not([class*="mono"]),
+th:not(.mono):not([class*="mono"]) {
+    font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+body {
+    font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+    background: linear-gradient(135deg, #050810 0%, #0a0e1a 15%, #0d1117 30%, #0f1419 45%, #11151c 50%, #0f1419 55%, #0d1117 70%, #0a0e1a 85%, #050810 100%);
+    background-attachment: fixed;
+    background-size: 300% 300%;
+    animation: gradientShift 20s ease infinite;
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    font-feature-settings: "kern" 1;
+    text-rendering: optimizeLegibility;
+}
+
+
+/* 确保所有中文文本元素都使用正确字体 */
+
+#app {
+    font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+code,
+pre {
+    font-family: var(--font-mono);
+}
+
+
+/* 滚动条样式 */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+}
+
+
+/* 链接样式 */
+
+a {
+    color: var(--text-link);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #79c0ff;
+    text-decoration: underline;
+}
+
+
+/* 按钮基础样式 */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    background: rgba(22, 27, 34, 0.6);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+
+/* 如果按钮需要等宽字体，可以添加 .mono 类 */
+
+.btn.mono {
+    font-family: var(--font-mono) !important;
+}
+
+.btn:hover {
+    background: rgba(22, 27, 34, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: var(--tech-gradient);
+    border-color: var(--tech-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%);
+    border-color: var(--tech-primary-hover);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #ff8566;
+    border-color: #ff8566;
+}
+
+
+/* 输入框样式 */
+
+.input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: rgba(22, 27, 34, 0.5);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    transition: all 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.input:focus {
+    outline: none;
+    border-color: rgba(88, 166, 255, 0.5);
+    background: rgba(22, 27, 34, 0.7);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+
+/* 卡片样式 - 磨砂玻璃效果 */
+
+.card,
+.stat-card,
+.content-card,
+.overview-card,
+.metric-card,
+.analytics-card,
+.chart-section,
+.orderbook-section,
+.order-panel,
+.positions-panel,
+.orders-panel,
+.assets-table-section,
+.assets-chart-section,
+.transaction-history,
+.strategy-card,
+.analytics-filters {
+    background: rgba(22, 27, 34, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before,
+.stat-card::before,
+.content-card::before,
+.overview-card::before,
+.metric-card::before,
+.analytics-card::before,
+.chart-section::before,
+.orderbook-section::before,
+.order-panel::before,
+.positions-panel::before,
+.orders-panel::before,
+.assets-table-section::before,
+.assets-chart-section::before,
+.transaction-history::before,
+.strategy-card::before,
+.analytics-filters::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+.card:hover,
+.stat-card:hover,
+.content-card:hover,
+.overview-card:hover,
+.metric-card:hover,
+.analytics-card:hover,
+.chart-section:hover,
+.orderbook-section:hover,
+.order-panel:hover,
+.positions-panel:hover,
+.orders-panel:hover,
+.assets-table-section:hover,
+.assets-chart-section:hover,
+.transaction-history:hover,
+.strategy-card:hover,
+.analytics-filters:hover {
+    background: rgba(22, 27, 34, 0.75);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+
+/* 标签样式 */
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+.badge-success {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.badge-danger {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.badge-warning {
+    background: var(--warning-bg);
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+
+/* 终端风格 */
+
+.terminal {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    overflow-x: auto;
+}
+
+.terminal-line {
+    margin-bottom: var(--spacing-xs);
+}
+
+.terminal-prompt {
+    color: var(--success);
+}
+
+.terminal-command {
+    color: var(--text-primary);
+}
+
+.terminal-output {
+    color: var(--text-secondary);
+}
+
+
+/* 代码块样式 */
+
+.code-block {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    overflow-x: auto;
+}
+
+
+/* 表格样式 */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.table th,
+.table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+}
+
+.table tr:hover {
+    background: var(--bg-hover);
+}
+
+
+/* 工具类 */
+
+.text-success {
+    color: var(--success);
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+.text-warning {
+    color: var(--warning);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.bg-success {
+    background: var(--success-bg);
+}
+
+.bg-danger {
+    background: var(--danger-bg);
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
