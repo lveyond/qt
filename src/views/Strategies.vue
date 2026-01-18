@@ -86,7 +86,7 @@
             {{ t('strategies.stop') }}
           </button>
           <button class="btn">{{ t('strategies.edit') }}</button>
-          <button class="btn">{{ t('strategies.backtest') }}</button>
+          <button class="btn" @click="openBacktestModal(strategy)">{{ t('strategies.backtest') }}</button>
           <button class="btn">{{ t('strategies.delete') }}</button>
         </div>
       </div>
@@ -402,12 +402,199 @@
         </div>
       </div>
     </div>
+
+    <!-- 回测弹窗 -->
+    <div 
+      class="backtest-modal" 
+      v-if="showBacktestModal"
+      @click.self="closeBacktestModal"
+      @wheel.prevent="handleModalWheel"
+    >
+      <div class="modal-content backtest-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ t('strategies.backtestTitle') }} - {{ currentBacktestStrategy?.name }}</h2>
+          <button class="btn btn-close" @click="closeBacktestModal" title="关闭">×</button>
+        </div>
+
+        <div class="modal-body backtest-modal-body">
+          <!-- 回测配置 -->
+          <div v-if="!backtestCompleted" class="backtest-config-section">
+            <h3 class="section-title">{{ t('strategies.backtestConfig') }}</h3>
+            
+            <div class="config-grid">
+              <div class="form-group">
+                <label class="form-label">{{ t('strategies.backtestTimeRange') }}</label>
+                <select v-model="backtestConfig.timeRange" class="input">
+                  <option value="7d">{{ t('strategies.backtestLast7Days') }}</option>
+                  <option value="30d">{{ t('strategies.backtestLast30Days') }}</option>
+                  <option value="90d">{{ t('strategies.backtestLast90Days') }}</option>
+                  <option value="1y">{{ t('strategies.backtestLastYear') }}</option>
+                  <option value="custom">{{ t('strategies.backtestCustom') }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" v-if="backtestConfig.timeRange === 'custom'">
+                <label class="form-label">{{ t('strategies.backtestStartDate') }}</label>
+                <input 
+                  v-model="backtestConfig.startDate" 
+                  type="date" 
+                  class="input"
+                >
+              </div>
+
+              <div class="form-group" v-if="backtestConfig.timeRange === 'custom'">
+                <label class="form-label">{{ t('strategies.backtestEndDate') }}</label>
+                <input 
+                  v-model="backtestConfig.endDate" 
+                  type="date" 
+                  class="input"
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ t('strategies.backtestInitialCapital') }}</label>
+                <input 
+                  v-model.number="backtestConfig.initialCapital" 
+                  type="number" 
+                  class="input"
+                  :placeholder="t('strategies.backtestPlaceholder')"
+                  min="100"
+                  step="100"
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ t('strategies.backtestTradingPair') }}</label>
+                <select v-model="backtestConfig.tradingPair" class="input">
+                  <option value="ETH/USDT">ETH/USDT</option>
+                  <option value="BTC/USDT">BTC/USDT</option>
+                  <option value="BNB/USDT">BNB/USDT</option>
+                  <option value="SOL/USDT">SOL/USDT</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 回测结果 -->
+          <div v-if="backtestCompleted" class="backtest-results-section">
+            <h3 class="section-title">{{ t('strategies.backtestResults') }}</h3>
+
+            <!-- 关键指标 -->
+            <div class="results-stats">
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestTotalReturn') }}</div>
+                <div 
+                  class="result-stat-value"
+                  :class="backtestResults.totalReturn >= 0 ? 'text-success' : 'text-danger'"
+                >
+                  {{ backtestResults.totalReturn >= 0 ? '+' : '' }}{{ backtestResults.totalReturn.toFixed(2) }}%
+                </div>
+              </div>
+
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestTotalProfit') }}</div>
+                <div 
+                  class="result-stat-value"
+                  :class="backtestResults.totalProfit >= 0 ? 'text-success' : 'text-danger'"
+                >
+                  {{ backtestResults.totalProfit >= 0 ? '+' : '' }}${{ backtestResults.totalProfit.toLocaleString() }}
+                </div>
+              </div>
+
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestMaxDrawdown') }}</div>
+                <div class="result-stat-value text-danger">
+                  -{{ backtestResults.maxDrawdown.toFixed(2) }}%
+                </div>
+              </div>
+
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestSharpeRatio') }}</div>
+                <div class="result-stat-value">
+                  {{ backtestResults.sharpeRatio.toFixed(2) }}
+                </div>
+              </div>
+
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestWinRate') }}</div>
+                <div class="result-stat-value">
+                  {{ backtestResults.winRate.toFixed(1) }}%
+                </div>
+              </div>
+
+              <div class="result-stat-card">
+                <div class="result-stat-label">{{ t('strategies.backtestTotalTrades') }}</div>
+                <div class="result-stat-value">
+                  {{ backtestResults.totalTrades }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="backtest-charts">
+              <div class="chart-container">
+                <div class="chart-header">
+                  <h4 class="chart-title">{{ t('strategies.backtestEquityCurve') }}</h4>
+                </div>
+                <div ref="equityChart" class="backtest-chart"></div>
+              </div>
+
+              <div class="chart-container">
+                <div class="chart-header">
+                  <h4 class="chart-title">{{ t('strategies.backtestMonthlyReturn') }}</h4>
+                </div>
+                <div ref="monthlyChart" class="backtest-chart"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 回测中状态 -->
+          <div v-if="backtestRunning" class="backtest-loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">{{ t('strategies.backtestRunning') }}</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button 
+            class="btn" 
+            @click="closeBacktestModal"
+            v-if="!backtestRunning"
+          >
+            {{ t('strategies.backtestClose') }}
+          </button>
+          <button 
+            class="btn btn-secondary" 
+            @click="resetBacktest"
+            v-if="backtestCompleted && !backtestRunning"
+          >
+            {{ t('strategies.backtestReset') }}
+          </button>
+          <button 
+            class="btn btn-primary" 
+            @click="runBacktest"
+            v-if="!backtestCompleted && !backtestRunning"
+            :disabled="!canRunBacktest"
+          >
+            {{ t('strategies.backtestRun') }}
+          </button>
+          <button 
+            class="btn btn-primary" 
+            @click="exportBacktestReport"
+            v-if="backtestCompleted && !backtestRunning"
+          >
+            {{ t('strategies.backtestExport') }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
+import { ref, computed, inject, onMounted, onUnmounted, nextTick } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
+import * as echarts from 'echarts'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
@@ -420,7 +607,9 @@ const t = (key) => translate(key, currentLanguage.value)
 
 const showCreateModal = ref(false)
 const showCodeModal = ref(false)
+const showBacktestModal = ref(false)
 const currentStrategy = ref(null)
+const currentBacktestStrategy = ref(null)
 
 // 向导步骤
 const currentStep = ref(1)
@@ -1345,8 +1534,14 @@ const copyCode = async () => {
 
 // ESC键关闭弹窗
 const handleEscape = (e) => {
-  if (e.key === 'Escape' && showCreateModal.value) {
-    closeCreateModal()
+  if (e.key === 'Escape') {
+    if (showCreateModal.value) {
+      closeCreateModal()
+    } else if (showBacktestModal.value) {
+      closeBacktestModal()
+    } else if (showCodeModal.value) {
+      closeCodeModal()
+    }
   }
 }
 
@@ -1358,7 +1553,481 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleEscape)
   // 确保页面滚动恢复
   document.body.style.overflow = ''
+  // 清理图表实例
+  if (equityChartInstance) {
+    equityChartInstance.dispose()
+    equityChartInstance = null
+  }
+  if (monthlyChartInstance) {
+    monthlyChartInstance.dispose()
+    monthlyChartInstance = null
+  }
 })
+
+// 回测相关
+const backtestRunning = ref(false)
+const backtestCompleted = ref(false)
+const backtestConfig = ref({
+  timeRange: '30d',
+  startDate: '',
+  endDate: '',
+  initialCapital: 10000,
+  tradingPair: 'ETH/USDT'
+})
+
+const backtestResults = ref({
+  totalReturn: 0,
+  totalProfit: 0,
+  maxDrawdown: 0,
+  sharpeRatio: 0,
+  winRate: 0,
+  totalTrades: 0,
+  avgProfit: 0,
+  profitLossRatio: 0,
+  equityData: [],
+  monthlyData: []
+})
+
+const equityChart = ref(null)
+const monthlyChart = ref(null)
+let equityChartInstance = null
+let monthlyChartInstance = null
+
+const canRunBacktest = computed(() => {
+  if (backtestConfig.value.timeRange === 'custom') {
+    return backtestConfig.value.startDate && backtestConfig.value.endDate && 
+           backtestConfig.value.initialCapital >= 100
+  }
+  return backtestConfig.value.initialCapital >= 100
+})
+
+const openBacktestModal = (strategy) => {
+  currentBacktestStrategy.value = strategy
+  showBacktestModal.value = true
+  backtestCompleted.value = false
+  backtestRunning.value = false
+  
+  // 设置默认日期范围
+  const endDate = new Date()
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - 30)
+  
+  // 重置配置
+  backtestConfig.value = {
+    timeRange: '30d',
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0],
+    initialCapital: 10000,
+    tradingPair: 'ETH/USDT'
+  }
+  // 禁用主页面滚动
+  document.body.style.overflow = 'hidden'
+}
+
+const closeBacktestModal = () => {
+  showBacktestModal.value = false
+  backtestRunning.value = false
+  // 清理图表实例
+  if (equityChartInstance) {
+    equityChartInstance.dispose()
+    equityChartInstance = null
+  }
+  if (monthlyChartInstance) {
+    monthlyChartInstance.dispose()
+    monthlyChartInstance = null
+  }
+  // 恢复主页面滚动
+  document.body.style.overflow = ''
+}
+
+const resetBacktest = () => {
+  backtestCompleted.value = false
+  backtestResults.value = {
+    totalReturn: 0,
+    totalProfit: 0,
+    maxDrawdown: 0,
+    sharpeRatio: 0,
+    winRate: 0,
+    totalTrades: 0,
+    avgProfit: 0,
+    profitLossRatio: 0,
+    equityData: [],
+    monthlyData: []
+  }
+  if (equityChartInstance) {
+    equityChartInstance.dispose()
+    equityChartInstance = null
+  }
+  if (monthlyChartInstance) {
+    monthlyChartInstance.dispose()
+    monthlyChartInstance = null
+  }
+}
+
+const runBacktest = async () => {
+  if (!canRunBacktest.value) return
+  
+  backtestRunning.value = true
+  backtestCompleted.value = false
+
+  // 模拟回测过程（实际应该调用后端API）
+  await new Promise(resolve => setTimeout(resolve, 2000))
+
+  // 生成模拟回测数据
+  generateMockBacktestData()
+
+  backtestRunning.value = false
+  backtestCompleted.value = true
+
+  // 初始化图表
+  await nextTick()
+  initBacktestCharts()
+}
+
+const generateMockBacktestData = () => {
+  const initialCapital = backtestConfig.value.initialCapital
+  
+  // 计算回测日期范围
+  let startDate, endDate
+  if (backtestConfig.value.timeRange === 'custom') {
+    startDate = new Date(backtestConfig.value.startDate)
+    endDate = new Date(backtestConfig.value.endDate)
+  } else {
+    endDate = new Date()
+    startDate = new Date()
+    const days = backtestConfig.value.timeRange === '7d' ? 7 : 
+                 backtestConfig.value.timeRange === '30d' ? 30 :
+                 backtestConfig.value.timeRange === '90d' ? 90 : 365
+    startDate.setDate(startDate.getDate() - days)
+  }
+  
+  const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+  
+  // 生成净值曲线数据
+  const equityData = []
+  let currentEquity = initialCapital
+  const baseDate = new Date(startDate)
+
+  for (let i = 0; i <= days; i++) {
+    const date = new Date(baseDate)
+    date.setDate(date.getDate() + i)
+    // 模拟价格波动
+    const change = (Math.random() - 0.45) * 0.02 // 略微偏向上涨
+    currentEquity *= (1 + change)
+    equityData.push([date.getTime(), currentEquity])
+  }
+
+  // 计算统计数据
+  const finalEquity = currentEquity
+  const totalReturn = ((finalEquity - initialCapital) / initialCapital) * 100
+  const totalProfit = finalEquity - initialCapital
+
+  // 计算最大回撤
+  let maxEquity = initialCapital
+  let maxDrawdown = 0
+  equityData.forEach(([time, equity]) => {
+    if (equity > maxEquity) {
+      maxEquity = equity
+    }
+    const drawdown = ((maxEquity - equity) / maxEquity) * 100
+    if (drawdown > maxDrawdown) {
+      maxDrawdown = drawdown
+    }
+  })
+
+  // 生成月度收益数据
+  const monthlyData = []
+  const months = Math.ceil(days / 30)
+  for (let i = 0; i < months; i++) {
+    const monthStart = i * 30
+    const monthEnd = Math.min((i + 1) * 30, days)
+    const startEquity = equityData[monthStart]?.[1] || initialCapital
+    const endEquity = equityData[monthEnd]?.[1] || finalEquity
+    const monthlyReturn = ((endEquity - startEquity) / startEquity) * 100
+    monthlyData.push({
+      month: `第${i + 1}月`,
+      return: monthlyReturn
+    })
+  }
+
+  // 模拟交易统计
+  const totalTrades = Math.floor(days / 3) + Math.floor(Math.random() * 20)
+  const winTrades = Math.floor(totalTrades * (0.5 + Math.random() * 0.2))
+  const winRate = (winTrades / totalTrades) * 100
+  const avgProfit = totalProfit / totalTrades
+  const sharpeRatio = totalReturn > 0 ? (totalReturn / Math.max(maxDrawdown, 1)) * 0.8 : 0
+
+  backtestResults.value = {
+    totalReturn: totalReturn,
+    totalProfit: totalProfit,
+    maxDrawdown: maxDrawdown,
+    sharpeRatio: sharpeRatio,
+    winRate: winRate,
+    totalTrades: totalTrades,
+    avgProfit: avgProfit,
+    profitLossRatio: winRate > 0 ? (winRate / (100 - winRate)) : 0,
+    equityData: equityData,
+    monthlyData: monthlyData
+  }
+}
+
+const initBacktestCharts = () => {
+  // 初始化净值曲线图
+  if (equityChart.value && !equityChartInstance) {
+    equityChartInstance = echarts.init(equityChart.value)
+    
+    const option = {
+      backgroundColor: 'transparent',
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'time',
+        boundaryGap: false,
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.6)',
+            width: 1
+          }
+        },
+        axisLabel: {
+          color: '#8b949e',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)'
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.6)',
+            width: 1
+          }
+        },
+        axisLabel: {
+          color: '#8b949e',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)',
+          formatter: (value) => `$${value.toLocaleString()}`
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'var(--border-color)',
+            type: 'dashed'
+          }
+        }
+      },
+      series: [{
+        name: '净值',
+        type: 'line',
+        smooth: true,
+        data: backtestResults.value.equityData,
+        lineStyle: {
+          color: '#3fb950',
+          width: 2.5,
+          shadowBlur: 4,
+          shadowColor: 'rgba(63, 185, 80, 0.3)'
+        },
+        itemStyle: {
+          color: '#3fb950'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(63, 185, 80, 0.25)' },
+              { offset: 0.5, color: 'rgba(63, 185, 80, 0.1)' },
+              { offset: 1, color: 'rgba(63, 185, 80, 0.02)' }
+            ]
+          }
+        },
+        symbol: 'none',
+        emphasis: {
+          focus: 'series',
+          lineStyle: {
+            width: 3
+          }
+        }
+      }],
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(22, 27, 34, 0.95)',
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+        borderWidth: 1,
+        textStyle: {
+          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12
+        },
+        padding: [8, 12],
+        formatter: (params) => {
+          const date = new Date(params[0].value[0])
+          const value = params[0].value[1]
+          const change = value - backtestConfig.value.initialCapital
+          const changePercent = ((change / backtestConfig.value.initialCapital) * 100).toFixed(2)
+          return `
+            <div style="font-weight: 600; margin-bottom: 4px;">${date.toLocaleDateString()}</div>
+            <div>净值: <span style="color: #3fb950; font-weight: 600;">$${value.toLocaleString()}</span></div>
+            <div style="font-size: 11px; color: #8b949e; margin-top: 4px;">
+              ${change >= 0 ? '+' : ''}$${change.toLocaleString()} (${changePercent >= 0 ? '+' : ''}${changePercent}%)
+            </div>
+          `
+        }
+      }
+    }
+
+    equityChartInstance.setOption(option)
+
+    window.addEventListener('resize', () => {
+      if (equityChartInstance) {
+        equityChartInstance.resize()
+      }
+    })
+  }
+
+  // 初始化月度收益图
+  if (monthlyChart.value && !monthlyChartInstance) {
+    monthlyChartInstance = echarts.init(monthlyChart.value)
+    
+    const option = {
+      backgroundColor: 'transparent',
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: backtestResults.value.monthlyData.map(d => d.month),
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.6)',
+            width: 1
+          }
+        },
+        axisLabel: {
+          color: '#8b949e',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)'
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.6)',
+            width: 1
+          }
+        },
+        axisLabel: {
+          color: '#8b949e',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)',
+          formatter: (value) => `${value.toFixed(1)}%`
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.5)',
+            type: 'dashed',
+            width: 1
+          }
+        }
+      },
+      series: [{
+        name: '月度收益',
+        type: 'bar',
+        data: backtestResults.value.monthlyData.map(d => ({
+          value: d.return,
+          itemStyle: {
+            color: d.return >= 0 
+              ? {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    { offset: 0, color: '#3fb950' },
+                    { offset: 1, color: '#238636' }
+                  ]
+                }
+              : {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    { offset: 0, color: '#ff6b4a' },
+                    { offset: 1, color: '#da3633' }
+                  ]
+                },
+            borderRadius: [4, 4, 0, 0],
+            shadowBlur: 4,
+            shadowColor: d.return >= 0 
+              ? 'rgba(63, 185, 80, 0.3)' 
+              : 'rgba(255, 107, 74, 0.3)'
+          }
+        })),
+        barWidth: '60%',
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 8,
+            shadowOffsetY: -2
+          }
+        }
+      }],
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(22, 27, 34, 0.95)',
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+        borderWidth: 1,
+        textStyle: {
+          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12
+        },
+        padding: [8, 12],
+        formatter: (params) => {
+          const value = params[0].value
+          const color = value >= 0 ? '#3fb950' : '#ff6b4a'
+          return `
+            <div style="font-weight: 600; margin-bottom: 4px;">${params[0].name}</div>
+            <div>收益: <span style="color: ${color}; font-weight: 600;">${value >= 0 ? '+' : ''}${value.toFixed(2)}%</span></div>
+          `
+        }
+      }
+    }
+
+    monthlyChartInstance.setOption(option)
+
+    window.addEventListener('resize', () => {
+      if (monthlyChartInstance) {
+        monthlyChartInstance.resize()
+      }
+    })
+  }
+}
+
+const exportBacktestReport = () => {
+  // 导出回测报告（实际应该生成PDF或CSV）
+  const report = {
+    strategy: currentBacktestStrategy.value.name,
+    config: backtestConfig.value,
+    results: backtestResults.value,
+    date: new Date().toISOString()
+  }
+  console.log('导出回测报告:', report)
+  alert('回测报告已导出（控制台查看）')
+}
 </script>
 
 <style scoped>
@@ -2090,6 +2759,8 @@ textarea.input {
   flex-direction: column;
   gap: var(--spacing-xs);
   min-width: 0;
+  min-height: 200px;
+  justify-content: flex-start;
 }
 
 .template-card:hover {
@@ -2141,12 +2812,12 @@ textarea.input {
 .template-desc {
   font-size: 11px;
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.5;
   flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin: 0;
+  min-height: 48px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .template-tags {
@@ -2461,9 +3132,234 @@ textarea.input {
   color: var(--text-muted);
 }
 
+/* 回测弹窗样式 */
+.backtest-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+
+.backtest-modal-content {
+  background: rgba(22, 27, 34, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+}
+
+.backtest-modal-body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  flex: 1;
+  min-height: 0;
+}
+
+.backtest-config-section,
+.backtest-results-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.results-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.result-stat-card {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(22, 27, 34, 0.8) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tech-primary), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.result-stat-card:hover {
+  border-color: var(--tech-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.result-stat-card:hover::before {
+  opacity: 1;
+}
+
+.result-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.result-stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.result-stat-value.text-success {
+  color: #3fb950;
+  text-shadow: 0 0 8px rgba(63, 185, 80, 0.3);
+}
+
+.result-stat-value.text-danger {
+  color: #ff6b4a;
+  text-shadow: 0 0 8px rgba(255, 107, 74, 0.3);
+}
+
+.backtest-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.chart-container {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(22, 27, 34, 0.6) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+}
+
+.chart-container:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.backtest-chart {
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+}
+
+.backtest-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  gap: var(--spacing-md);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--tech-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .template-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .backtest-charts {
+    grid-template-columns: 1fr;
+  }
+  
+  .results-stats {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -2487,6 +3383,14 @@ textarea.input {
   
   .step-label {
     font-size: 10px;
+  }
+  
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .results-stats {
+    grid-template-columns: 1fr;
   }
 }
 </style>
