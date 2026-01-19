@@ -1267,17 +1267,7 @@ const formatNumber = (num) => {
 }
 
 .neon-text {
-  color: #00ffff;
-  text-shadow: 
-    0 0 5px #00ffff,
-    0 0 10px #00ffff,
-    0 0 15px #00ffff;
-  animation: neon-pulse 2s ease-in-out infinite;
-}
-
-@keyframes neon-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  color: #4ade80;
 }
 
 /* 全社区排行榜 */
@@ -1972,12 +1962,10 @@ const formatNumber = (num) => {
   height: 12px;
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 8px currentColor;
 }
 
 .legend-bullish {
   background: #00ff00;
-  box-shadow: 0 0 10px #00ff00;
   width: 20px;
   height: 12px;
   border-radius: 2px;
@@ -1985,7 +1973,6 @@ const formatNumber = (num) => {
 
 .legend-bearish {
   background: #ff0000;
-  box-shadow: 0 0 10px #ff0000;
   width: 20px;
   height: 12px;
   border-radius: 2px;
@@ -2073,13 +2060,11 @@ const formatNumber = (num) => {
 .candlestick-body.bullish {
   background: #00ff00;
   border-color: #00ff00;
-  box-shadow: 0 0 8px #00ff00;
 }
 
 .candlestick-body.bearish {
   background: #ff0000;
   border-color: #ff0000;
-  box-shadow: 0 0 8px #ff0000;
 }
 
 .candlestick:hover .candlestick-body {
@@ -2366,12 +2351,10 @@ const formatNumber = (num) => {
 
 .mining-feedback.success {
   color: #00ff00;
-  text-shadow: 0 0 10px #00ff00;
 }
 
 .mining-feedback.empty {
   color: #999;
-  text-shadow: 0 0 10px #999;
   font-size: 20px;
 }
 
